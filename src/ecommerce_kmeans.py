@@ -71,3 +71,47 @@ preprocessor=Pipeline([
 ])
 
 X = preprocessor.fit_transform(df_enc.values)
+
+# Find optimal cluster number: inertia plot
+sse = {}
+for k in range(1, 11):
+    print('KMeans: k={}'.format(k))
+    kmeans = KMeans(n_clusters=k,\
+                    random_state=42,\
+                    n_jobs=-1,\
+                    n_init=20)
+    kmeans.fit(df_enc)
+    sse[k] = kmeans.inertia_
+print('Done.')
+
+plt.figure()
+sns.pointplot(x=list(sse.keys()),\
+              y=list(sse.values()))
+plt.title('Inertia plot')
+plt.xlabel('k')
+plt.ylabel('SSE')
+plt.show()
+
+# Solution with 2 clusters
+def kmeans_clustering(n_clusters):
+    """
+    Generate cluster segments solution.
+    """
+    km = KMeans(n_clusters=n_clusters,\
+                n_jobs=-1,\
+                random_state=42)
+    km.fit(df_enc)
+    df['cluster'] = km.labels_
+
+    # Summary metrics for RFM Score
+    sol =df.groupby('cluster').agg({
+        'recency': 'mean',
+        'frequency': 'mean',
+        'monetary_value': ['mean', 'count']
+    }).round(1)\
+    .sort_values(by='cluster', ascending=True)
+    print(sol)
+
+kmeans_clustering(2)
+
+kmeans_clustering(3)
