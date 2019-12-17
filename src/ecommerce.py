@@ -47,25 +47,46 @@ print('Dataframe size: {}'.format(df_size))
 # Load data
 data = pd.read_sql('SELECT * FROM ecommerce;', engine).drop(columns=['index', 'id'], axis=1)
 
-# date
+# date range in the dataset
 print('Min_date: {0}\nMax_date: {1}\n\n'.format(data['invoicedate'].min(), data['invoicedate'].max()))
 
+# RFM Analysis
 # set snapshot date to 1 day after the max 
-snapshot_date = data['invoicedate'].max()+timedelta(days=1)
-
-data['totalspent'] = data['quantity']*data['unitprice']
+#snapshot_date = data['invoicedate'].max()+timedelta(days=1)
+# Find total spent
+#data['totalspent'] = data['quantity']*data['unitprice']
 
 # Find recency, frequency, monetary value
-df=data.groupby('customerid').agg({
-    'invoicedate': lambda x: (snapshot_date-x.max()).days,
-    'invoiceno': 'count',
-    'totalspent': 'sum'
-})
+#df=data.groupby('customerid').agg({
+#    'invoicedate': lambda x: (snapshot_date-x.max()).days,
+#    'invoiceno': 'count',
+#    'totalspent': 'sum'
+#})
 
-df.rename(columns={
-    'invoicedate': 'recency',
-    'invoiceno': 'frequency',
-    'totalspent': 'monetaryvalue'
-}, inplace=True)
+#df.rename(columns={
+#    'invoicedate': 'recency',
+#    'invoiceno': 'frequency',
+#    'totalspent': 'monetaryvalue'
+#}, inplace=True)
+
+query="""
+SELECT 
+    customerid,
+    TIMESTAMPDIFF(DAY,
+        MAX(invoicedate),
+        (SELECT 
+                DATE_ADD(MAX(invoicedate),
+                        INTERVAL 1 DAY) AS snapshot_date
+            FROM
+                ecommerce)) AS recency,
+    COUNT(quantity) AS frequency,
+    ROUND(SUM(unitprice * quantity), 2) AS monetaryvalue
+FROM
+    ecommerce
+GROUP BY customerid
+ORDER BY customerid;
+"""
+df=pd.read_sql(query, engine)
+
 
 df.head()
