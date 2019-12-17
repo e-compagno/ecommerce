@@ -4,14 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import seaborn as sns
 #import pandas_profiling
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingRegressor
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import r2_score, mean_squared_error
-from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline 
-from sklearn.linear_model import Lasso, LinearRegression, Ridge, ElasticNet
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import KFold
 import joblib
 import pickle
 
@@ -113,3 +106,7 @@ df.groupby('general_segment').agg({
     'frequency': 'mean',
     'monetary_value': ['mean', 'count']
 }).round(1)
+
+
+# KMeans to build customer segments 
+
