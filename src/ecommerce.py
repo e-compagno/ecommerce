@@ -55,4 +55,26 @@ print('Min_date: {0}\nMax_date: {1}\n\n'.format(data['invoicedate'].min(), data[
 df=pd.read_sql('SELECT * FROM rfm;', engine)
 df= df.set_index('customerid')
 
+# create labels for rfm segments
+r_labels = range(4, 0, -1)
+f_labels = range(1, 5)
+m_labels = range(1, 5)
+df['R'] = pd.qcut(df['recency'],
+                      4,
+                      labels = r_labels)
+df['F'] = pd.qcut(df['frequency'],
+                      4,
+                      labels = f_labels)
+df['M'] = pd.qcut(df['monetary_value'],
+                      4,
+                      labels = m_labels)
+
+def join_rfm(x):
+    """
+    Create the rfm segment.
+    """
+    return str(x['R'])+str(x['F'])+str(x['M'])
+
+df['RFM_segment'] = df.apply(join_rfm, axis=1)
+df['RFM_score'] = df[['R', 'F', 'M']].sum(axis=1)
 df.head()
