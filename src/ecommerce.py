@@ -78,3 +78,38 @@ def join_rfm(x):
 df['RFM_segment'] = df.apply(join_rfm, axis=1)
 df['RFM_score'] = df[['R', 'F', 'M']].sum(axis=1)
 df.head()
+
+# Segment analysis
+segments = df.groupby('RFM_segment').size().sort_values(ascending=False)[:10]
+plt.figure()
+sns.barplot(segments.index,\
+            segments)
+plt.show()
+
+# Summary metrics for RFM Score
+df.groupby('RFM_score').agg({
+    'recency': 'mean',
+    'frequency': 'mean',
+    'monetary_value': ['mean', 'count']
+}).round(1)\
+.sort_values(by='RFM_score', ascending=False)
+
+# Create custom segments
+def segment_me(df):
+    """
+    Create custom segments
+    """
+    if df['RFM_score'] >= 9:
+        return 'Gold'
+    elif (df['RFM_score']>=5) and (df['RFM_score']<9):
+        return 'Silver'
+    else:
+        return 'Bronze'
+df['general_segment'] = df.apply(segment_me, axis=1)        
+
+# Summary metrics for general_segments
+df.groupby('general_segment').agg({
+    'recency': 'mean',
+    'frequency': 'mean',
+    'monetary_value': ['mean', 'count']
+}).round(1)
