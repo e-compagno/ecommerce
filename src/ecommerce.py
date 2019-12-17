@@ -87,6 +87,6 @@ GROUP BY customerid
 ORDER BY customerid;
 """
 df=pd.read_sql(query, engine)
-
+df= df.set_index('customerid')
 
 df.head()
